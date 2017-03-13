@@ -20,11 +20,33 @@ instance CDOps Double where
 
 data CDNum a = Base a | Pair (CDNum a)  (CDNum a) deriving (Show, Eq)
 
+instance (CDOps a) => Num (CDNum a) where
+  (+) = cdAdd
+  negate = cdNegative
+  (*) = cdMultiply
+  fromInteger a = Base (fromInteger a)
+  signum = cdSignum
+  abs = cdNormSqr --todo pierwiastek
+  
+instance (CDOps a) => Fractional (CDNum a) where
+  recip = cdRecip
+  fromRational a = Base (fromRational a)
+  
+instance (CDOps a) => CDOps (CDNum a) where
+  neutralAdd = cdNeutralAdd
+  neutralMul = cdNeutralMultiply
+  conjugate = cdConjugate
+  normSqr = cdNormSqr
+  
 simplify :: (Eq a, CDOps a) => CDNum a -> CDNum a
 simplify (Base a) = Base a
 simplify (Pair a b) = if b == cdNeutralAdd
   then simplify a
   else (Pair a b)
+
+cdSignum :: (CDOps a) => CDNum a -> CDNum a
+cdSignum a = cdDivide (cdMultiply a a) (cdNormSqr a)
+
 
 cdExtend :: (CDOps a) => CDNum a -> CDNum a
 cdExtend a = Pair a (Base neutralAdd)
