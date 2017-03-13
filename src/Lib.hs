@@ -44,9 +44,8 @@ simplify (Pair a b) = if b == cdNeutralAdd
   then simplify a
   else (Pair a b)
 
-cdSignum :: (CDOps a) => CDNum a -> CDNum a
+cdSignum :: (CDOps a) => CDNum a -> CDNum a --todo czy na pewno poprawne?
 cdSignum a = cdDivide (cdMultiply a a) (cdNormSqr a)
-
 
 cdExtend :: (CDOps a) => CDNum a -> CDNum a
 cdExtend a = Pair a (Base neutralAdd)

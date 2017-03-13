@@ -1,3 +1,3 @@
 Baw się replem na liczbach kostruowanych metodą Cayleya-Dicksona!
 https://pl.wikipedia.org/wiki/Aksjomaty_i_konstrukcje_liczb#Konstrukcja_Cayleya-Dicksona
-(WIP, nie ma repla na razie)
+(WIP, nie ma repla na razie, działania są)
