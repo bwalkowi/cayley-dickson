@@ -22,8 +22,12 @@ instance CDOps Double where
   neutralMul = 1
   conjugate a = a
 
-data CDNum a = Base a | Pair (CDNum a)  (CDNum a) deriving (Show, Eq)
+data CDNum a = Base a | Pair (CDNum a)  (CDNum a) deriving (Eq)
 
+instance (Show a) => Show (CDNum a) where
+  show (Base a) = show a
+  show (Pair a b) = "["++(show a) ++" "++ (show b) ++ "]"
+  
 instance (CDOps a) => Num (CDNum a) where
   (+) = cdAdd
   negate = cdNegative

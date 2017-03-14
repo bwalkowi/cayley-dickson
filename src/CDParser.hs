@@ -1,8 +1,10 @@
-module Parser
-  (
+module CDParser
+  (readExpr
+  , eval
   ) where
 
 import Lib
+import Text.ParserCombinators.Parsec.Number
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Control.Monad
@@ -29,17 +31,20 @@ spaces = skipMany1 space
 --todo lepiej zrobić
 parseOp :: Parser ReplVal
 parseOp = do-- liftM recognizeOp $ oneOf "*/+-"
-  op <- oneOf "*/+-"
+  op <- oneOf "*/+-~rc"
   return $ case op of
     '+' -> Operation Add
     '*' -> Operation Mul
     '-' -> Operation Sub
     '/' -> Operation Div
+    '~' -> Operation Neg
+    'r' -> Operation Recip
+    'c' -> Operation Conjugate
     
 
 
 parseNumber :: Parser ReplVal
-parseNumber = liftM (Number . read) $ many1 digit --todo liczby ujemne (może z ~ jako nagacją)
+parseNumber = liftM (Number . read) $ many1 digit  --todo liczby ujemne (może z ~ jako nagacją)
 
 parseList :: Parser ReplVal
 parseList = liftM List $ sepBy parseExpr spaces
@@ -76,7 +81,6 @@ eval (NumList l) = constructFromList (map (\x-> case x of Number d-> d) l) --tod
 eval (List l) = let Operation op = (head l) --todo wydłubać sobie oczy
                     in
                   evalOp op (tail l)
---eval (Operation op)
 
 evalOp :: Op -> [ReplVal] -> CDNum Double
 evalOp Add [val1, val2] = (+) (eval val1) (eval val2)
@@ -86,3 +90,11 @@ evalOp Div [val1, val2] = (/) (eval val1) (eval val2)
 evalOp Neg [v] = negate (eval v)
 evalOp Recip [v] = recip (eval v)
 evalOp Conjugate [v] = conjugate (eval v)
+
+
+
+
+
+
+
+
