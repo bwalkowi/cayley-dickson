@@ -1,5 +1,9 @@
 module Lib
     ( someFunc
+    ,  CDNum(..)
+    , CDOps(..)
+    , simplify
+    , constructFromList
     ) where
 
 someFunc :: IO ()
@@ -37,7 +41,23 @@ instance (CDOps a) => CDOps (CDNum a) where
   neutralMul = cdNeutralMultiply
   conjugate = cdConjugate
   normSqr = cdNormSqr
-  
+
+--[1] -> [1]
+--[1 2] -> [1 2]
+--[1 2 3 4] -> [[1 2] [3 4]]
+--[1 2 3 4 5 6 7 8] -> [[1 2 3 4] [5 6 7 8]] -> [[[1 2] [3 4]] [[5 6] [7 8]]]
+--todo: w razie gdyby lista nie była długości 2^n trzeba będzie dopełnić zerami
+constructFromList :: (CDOps a) => [a] -> CDNum a
+constructFromList lst = cnstrFromList  (map Base lst)
+
+partition :: Int -> [a] -> [[a]]
+partition _ [] = []
+partition n xs = (take n xs) : (partition n (drop n xs))
+
+cnstrFromList :: [CDNum a] -> CDNum a
+cnstrFromList [x] = x
+cnstrFromList [a, b] = Pair a b
+cnstrFromList xs = cnstrFromList (map cnstrFromList (partition 2 xs))                                     
 simplify :: (Eq a, CDOps a) => CDNum a -> CDNum a
 simplify (Base a) = Base a
 simplify (Pair a b) = if b == cdNeutralAdd

@@ -2,6 +2,7 @@ module Parser
   (
   ) where
 
+import Lib
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Control.Monad
@@ -13,21 +14,14 @@ Plan:
 (+ [2 3] [5 6]) -> [7 9]
 --}
 
-data Op = Add | Sub | Mul | Div deriving (Show)
+data Op = Add | Sub | Mul | Div | Neg | Recip |Conjugate deriving (Show)
 
 
 data ReplVal = Operation Op --dodawanie itp
              | Number Double --tylko na liczbach rzeczywistych operujemy
-             | NumList [ReplVal] --słodzik jak w Clojure
+             | NumList [ReplVal] --słodzik jak w Clojure (todo: zakładamy że ReplVale to same liczby!)
              | List [ReplVal] --s-expr do ewauacji
              deriving (Show)
-
---todo
-readExpr :: String -> String
-readExpr input = case parse parseExpr "S-expr" input of
-    Left err -> "No match: " ++ show err
-    Right val -> "Found value " ++ show val 
-
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -65,3 +59,30 @@ parseExpr =  parseNumber --todo zdublowany kod
                     char ']'
                     return x
                   
+
+
+--todo
+readExpr :: String -> Maybe ReplVal
+readExpr input = case parse parseExpr "S-expr" input of
+  Left err -> Nothing
+  Right val -> Just val 
+
+
+
+--todo osobny moduł dla Evala
+eval ::  ReplVal -> CDNum Double
+eval (Number d) = Base d
+eval (NumList l) = constructFromList (map (\x-> case x of Number d-> d) l) --todo zakładamy że w NumberList są same liczby
+eval (List l) = let Operation op = (head l) --todo wydłubać sobie oczy
+                    in
+                  evalOp op (tail l)
+--eval (Operation op)
+
+evalOp :: Op -> [ReplVal] -> CDNum Double
+evalOp Add [val1, val2] = (+) (eval val1) (eval val2)
+evalOp Sub [val1, val2] = (-) (eval val1) (eval val2)
+evalOp Mul [val1, val2] = (*) (eval val1) (eval val2)
+evalOp Div [val1, val2] = (/) (eval val1) (eval val2)
+evalOp Neg [v] = negate (eval v)
+evalOp Recip [v] = recip (eval v)
+evalOp Conjugate [v] = conjugate (eval v)
