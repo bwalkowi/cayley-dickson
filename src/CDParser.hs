@@ -44,7 +44,7 @@ parseOp = do-- liftM recognizeOp $ oneOf "*/+-"
 
 
 parseNumber :: Parser ReplVal
-parseNumber = liftM (Number . read) $ many1 digit  --todo liczby ujemne (może z ~ jako nagacją)
+parseNumber = liftM (Number . read) $ many1 (oneOf "-0123456789." ) --todo ulepszyć
 
 parseList :: Parser ReplVal
 parseList = liftM List $ sepBy parseExpr spaces
@@ -53,8 +53,8 @@ parseNumberList :: Parser ReplVal
 parseNumberList = liftM NumList $ sepBy parseNumber spaces
 
 parseExpr :: Parser ReplVal
-parseExpr =  parseNumber --todo zdublowany kod
-             <|> parseOp
+parseExpr =  parseOp --todo zdublowany kod
+             <|> parseNumber
              <|> do char '('
                     x <- try parseList 
                     char ')'

@@ -61,10 +61,15 @@ partition n xs = (take n xs) : (partition n (drop n xs))
 cnstrFromList :: [CDNum a] -> CDNum a
 cnstrFromList [x] = x
 cnstrFromList [a, b] = Pair a b
-cnstrFromList xs = cnstrFromList (map cnstrFromList (partition 2 xs))                                     
+cnstrFromList xs = cnstrFromList (map cnstrFromList (partition 2 xs))
+
+qIsNeutralAdd :: (CDOps a, Eq a) => (CDNum a) -> Bool
+qIsNeutralAdd (Base a) = neutralAdd == a
+qIsNeutralAdd (Pair a b) = (qIsNeutralAdd a) && (qIsNeutralAdd b)
+
 simplify :: (Eq a, CDOps a) => CDNum a -> CDNum a
 simplify (Base a) = Base a
-simplify (Pair a b) = if b == cdNeutralAdd
+simplify (Pair a b) = if (qIsNeutralAdd b)
   then simplify a
   else (Pair a b)
 
