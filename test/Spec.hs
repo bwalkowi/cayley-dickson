@@ -15,13 +15,32 @@ instance (Arbitrary a, Eq a, Fractional a) => Arbitrary (CDNum a) where
     ts <- arbitrary
     return (Pair t ts)
 
-prop_revapp :: [Int] -> [Int] -> Bool
-prop_revapp xs ys = reverse (xs++ys) ==reverse ys++ reverse xs
-
 prop_simplify ::  (CDNum Double) -> Bool
 prop_simplify num =(simplify (Pair num neutralAdd)) == (simplify num)
 
-main = do
-  quickCheck prop_revapp
-  quickCheck prop_simplify 
+prop_comutative :: ((CDNum Double) -> (CDNum Double) -> (CDNum Double)) ->(CDNum Double) -> (CDNum Double) -> Bool
+prop_comutative f a b =(f a b) == (f b a)
 
+prop_add :: (CDNum Double) -> (CDNum Double) -> Bool
+prop_add = prop_comutative (+)
+
+
+prop_sub :: (CDNum Double) -> (CDNum Double) -> Bool
+prop_sub a b  = if a==b then True else not  (prop_comutative (-) a b)
+
+--prop_multiply = prop_comutative (*) --nie jestem pewien czy to prawda
+ 
+prop_laczne :: ((CDNum Double) -> (CDNum Double) -> (CDNum Double)) ->(CDNum Double) -> (CDNum Double) -> (CDNum Double) -> Bool
+prop_laczne f a b c = (f (f a b) c) == (f a (f b c))
+
+prop_add_laczne = prop_laczne (+)
+prop_mul_laczne = prop_laczne (*) --nie jestem peiwen
+
+
+
+main = do
+  quickCheck prop_simplify
+  quickCheck prop_add
+  quickCheck prop_add_laczne
+  quickCheck prop_mul_laczne
+  quickCheck prop_sub

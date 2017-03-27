@@ -30,3 +30,8 @@ https://pl.wikipedia.org/wiki/Aksjomaty_i_konstrukcje_liczb#Konstrukcja_Cayleya-
 ```
 stack build
 ```
+
+## testy
+Nie odpalajcie ich!
+Zabierają cały ram
+Zostaje tylko słap, halucynacje z niedożywienia i śmierć
