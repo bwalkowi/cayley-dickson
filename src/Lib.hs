@@ -1,15 +1,12 @@
 module Lib
-    ( someFunc
-    ,  CDNum(..)
+    ( CDNum(..)
     , CDOps(..)
     , simplify
     , constructFromList
     ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "Elo"
 
-
+--https://pl.wikipedia.org/wiki/Aksjomaty_i_konstrukcje_liczb#Konstrukcja_Cayleya-Dicksona
 class (Fractional a) => CDOps a where
   neutralAdd :: a
   neutralMul :: a
@@ -17,17 +14,6 @@ class (Fractional a) => CDOps a where
   normSqr :: a -> a
   normSqr a = a * (conjugate a)
 
-instance CDOps Double where
-  neutralAdd = 0
-  neutralMul = 1
-  conjugate a = a
-
-data CDNum a = Base a | Pair (CDNum a)  (CDNum a) deriving (Eq)
-
-instance (Show a) => Show (CDNum a) where
-  show (Base a) = show a
-  show (Pair a b) = "["++(show a) ++" "++ (show b) ++ "]"
-  
 instance (CDOps a) => Num (CDNum a) where
   (+) = cdAdd
   negate = cdNegative
@@ -46,34 +32,51 @@ instance (CDOps a) => CDOps (CDNum a) where
   conjugate = cdConjugate
   normSqr = cdNormSqr
 
+
+data CDNum a = Base a | Pair (CDNum a)  (CDNum a) deriving (Eq)
+instance (Show a) => Show (CDNum a) where
+  show (Base a) = show a
+  show (Pair a b) = "["++(show a) ++" "++ (show b) ++ "]"
+
+
+--Przykładowym CDOpsem będzie Double
+instance CDOps Double where
+  neutralAdd = 0
+  neutralMul = 1
+  conjugate a = a
+
+
+-- Poniżej są już tylko szczegóły implementacji
+
+
 --[1] -> [1]
 --[1 2] -> [1 2]
 --[1 2 3 4] -> [[1 2] [3 4]]
 --[1 2 3 4 5 6 7 8] -> [[1 2 3 4] [5 6 7 8]] -> [[[1 2] [3 4]] [[5 6] [7 8]]]
 --todo: w razie gdyby lista nie była długości 2^n trzeba będzie dopełnić zerami
 constructFromList :: (CDOps a) => [a] -> CDNum a
-constructFromList lst = cnstrFromList  (map Base lst)
+constructFromList lst = constructFromCDNumList  (map Base lst)
 
 partition :: Int -> [a] -> [[a]]
 partition _ [] = []
 partition n xs = (take n xs) : (partition n (drop n xs))
 
-cnstrFromList :: [CDNum a] -> CDNum a
-cnstrFromList [x] = x
-cnstrFromList [a, b] = Pair a b
-cnstrFromList xs = cnstrFromList (map cnstrFromList (partition 2 xs))
+constructFromCDNumList :: [CDNum a] -> CDNum a
+constructFromCDNumList [x] = x
+constructFromCDNumList [a, b] = Pair a b
+constructFromCDNumList xs = constructFromCDNumList (map constructFromCDNumList (partition 2 xs))
 
-qIsNeutralAdd :: (CDOps a, Eq a) => (CDNum a) -> Bool
-qIsNeutralAdd (Base a) = neutralAdd == a
-qIsNeutralAdd (Pair a b) = (qIsNeutralAdd a) && (qIsNeutralAdd b)
+isCDNeutralAdd :: (CDOps a, Eq a) => (CDNum a) -> Bool
+isCDNeutralAdd (Base a) = neutralAdd == a
+isCDNeutralAdd (Pair a b) = (isCDNeutralAdd a) && (isCDNeutralAdd b)
 
 simplify :: (Eq a, CDOps a) => CDNum a -> CDNum a
 simplify (Base a) = Base a
-simplify (Pair a b) = if (qIsNeutralAdd b)
+simplify (Pair a b) = if (isCDNeutralAdd b)
   then simplify a
   else (Pair a b)
 
-cdSignum :: (CDOps a) => CDNum a -> CDNum a --todo czy na pewno poprawne?
+cdSignum :: (CDOps a) => CDNum a -> CDNum a --todo czy na pewno poprawne matematycznie?
 cdSignum a = cdDivide (cdMultiply a a) (cdNormSqr a)
 
 cdExtend :: (CDOps a) => CDNum a -> CDNum a

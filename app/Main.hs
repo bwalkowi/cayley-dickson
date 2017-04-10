@@ -1,22 +1,18 @@
 module Main where
 
 import Lib
-import CDParser --działa w replu nie działa wprzy budowaniu :/
+import Parser
 import System.IO
 
 main :: IO ()
---main = interact replFn
 main = do
   putStr "> "
-  hFlush stdout
-  -- input <- readLn
-  --putStrLn (replFn input)
+  hFlush stdout --'>' może być zbuforowane
   input <- getLine
-  putStrLn $ replFn input
+  putStrLn $ evalExpr input
   main
 
-
-replFn :: String -> String
-replFn input = case (readExpr input) of
-  Just out -> show (simplify (eval out))
-  Nothing -> "ERR" --todo error handling
+evalExpr :: String -> String
+evalExpr input = case (readExpr input) of
+  Right value -> show (simplify (eval value))
+  Left err -> "Błąd parsera:\n" ++ (show err)

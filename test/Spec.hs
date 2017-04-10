@@ -9,6 +9,16 @@ import Data.Monoid
 import Control.Monad
 
 
+{--
+Notatka:
+Testowanie przez generowanie jest nieprzyjemne i wcale nie lepsze od zwyczajnych testów jednostkowch.
+Powód: Straciłem kilka godzin życia restartując komputer z powodu braku pamięci.
+Haskel generuje więcej niż moja maszyna uciągnie i nie wiem jak to ograniczyć.
+
+Uruchamiacie na własną odpowiedzialność!
+--}
+
+
 instance (Arbitrary a, Eq a, Fractional a) => Arbitrary (CDNum a) where
   arbitrary = do
     t <- arbitrary
