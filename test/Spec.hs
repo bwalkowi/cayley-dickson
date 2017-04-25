@@ -1,8 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables, TemplateHaskell #-}
 import Test.QuickCheck
-import CDParser
+import Parser
 import Lib
---import Test.HUnit
+import Test.HUnit
 --import Test.Framework
 --import Test.Framework.Providers.HUnit
 import Data.Monoid
@@ -47,10 +47,25 @@ prop_add_laczne = prop_laczne (+)
 prop_mul_laczne = prop_laczne (*) --nie jestem peiwen
 
 
+--HUnit tests
+testSimplification :: Test
+testSimplification =
+  TestCase $ assertEqual "(1,0) = 1" (Base (1 :: Double)) (simplify (Pair (Base 1) (Base 0)))
+
+testMultiplication :: Test
+testMultiplication =
+  TestCase $ assertEqual "i * i = -1"  (Base (-1.0 :: Double)) (simplify ((Pair (Base 0.0) (Base 1.0)) * (Pair (Base 0.0) (Base 1.0))))
+
+
 
 main = do
+  --HUnit:
+  runTestTT (TestList [testSimplification
+                      ,testMultiplication])
+  --QuickTest:
   quickCheck prop_simplify
   quickCheck prop_add
   quickCheck prop_add_laczne
   quickCheck prop_mul_laczne
   quickCheck prop_sub
+
