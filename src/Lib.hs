@@ -6,7 +6,17 @@ module Lib
     ) where
 
 
---https://pl.wikipedia.org/wiki/Aksjomaty_i_konstrukcje_liczb#Konstrukcja_Cayleya-Dicksona
+{-|
+https://pl.wikipedia.org/wiki/Aksjomaty_i_konstrukcje_liczb#Konstrukcja_Cayleya-Dicksona
+
+* Para liczb rzeczywistych jest liczbą zespoloną
+* Para liczb zespolonych jest Kwaternionem
+* Para kwaternionów jest oktonionem
+* Można tak w nieskończoność
+
+Ta klasa opisuje działania które można wykonać na takich typach
+Potrzeba ją definiować dla typu podstawowego (jak liczby rzeczywiste w powyższym przykładzie)
+-}
 class (Fractional a) => CDOps a where
   neutralAdd :: a
   neutralMul :: a
@@ -32,7 +42,7 @@ instance (CDOps a) => CDOps (CDNum a) where
   conjugate = cdConjugate
   normSqr = cdNormSqr
 
-
+-- |Patrz: 'CDOps'.
 data CDNum a = Base a | Pair (CDNum a)  (CDNum a) deriving (Eq)
 instance (Show a) => Show (CDNum a) where
   show (Base a) = show a
@@ -48,14 +58,17 @@ instance CDOps Double where
 
 -- Poniżej są już tylko szczegóły implementacji
 
-
---[1] -> [1]
---[1 2] -> [1 2]
---[1 2 3 4] -> [[1 2] [3 4]]
---[1 2 3 4 5 6 7 8] -> [[1 2 3 4] [5 6 7 8]] -> [[[1 2] [3 4]] [[5 6] [7 8]]]
---todo: w razie gdyby lista nie była długości 2^n trzeba będzie dopełnić zerami
+{-|
+@
+[1] -> [1]
+[1 2] -> [1 2]
+[1 2 3 4] -> [[1 2] [3 4]]
+[1 2 3 4 5 6 7 8] -> [[1 2 3 4] [5 6 7 8]] -> [[[1 2] [3 4]] [[5 6] [7 8]]]
+@
+-}
 constructFromList :: (CDOps a) => [a] -> CDNum a
 constructFromList lst = constructFromCDNumList  (map Base lst)
+--todo: w razie gdyby lista nie była długości 2^n trzeba będzie dopełnić zerami
 
 partition :: Int -> [a] -> [[a]]
 partition _ [] = []
@@ -70,6 +83,7 @@ isCDNeutralAdd :: (CDOps a, Eq a) => (CDNum a) -> Bool
 isCDNeutralAdd (Base a) = neutralAdd == a
 isCDNeutralAdd (Pair a b) = (isCDNeutralAdd a) && (isCDNeutralAdd b)
 
+-- | Usuwa zagnieżdżenie niemające wpływu na wynik działań
 simplify :: (Eq a, CDOps a) => CDNum a -> CDNum a
 simplify (Base a) = Base a
 simplify (Pair a b) = if (isCDNeutralAdd b)

@@ -17,15 +17,16 @@ Plan:
 --}
 
 
---Operacje rozpoznawane przez Parser
+-- |Operacje rozpoznawane przez parser
 data Op = Add | Sub | Mul | Div | Neg | Recip |Conjugate deriving (Show)
 
-
-data ReplVal = Operation Op --dodawanie itp
-             | Number Double --tylko na liczbach rzeczywistych operujemy
-             | NumList [ReplVal] --słodzik jak w Clojure (todo: zakładamy że ReplVale to same liczby!)
-             | List [ReplVal] --s-expr do ewauacji
-             deriving (Show)
+-- |Obiekty które rozpoznaje parser
+data ReplVal
+  = Operation Op  -- ^ Dodawanie itp
+  | Number Double -- ^ tylko na liczbach rzeczywistych operujemy
+  | NumList [ReplVal] -- ^ słodzik jak w Clojure
+  | List [ReplVal] -- ^ s-expr do ewauacji
+  deriving (Show)
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -55,24 +56,25 @@ parseNumberList :: Parser ReplVal
 parseNumberList = liftM NumList $ sepBy parseNumber spaces
 
 parseExpr :: Parser ReplVal
-parseExpr =  parseOp --todo zdublowany kod
+parseExpr =  parseOp
              <|> parseNumber
-             <|> do char '('
-                    x <- try parseList 
-                    char ')'
-                    return x
-             <|> do char '['
-                    x <- try parseNumberList 
-                    char ']'
-                    return x
-                  
+             <|> listTypeParser '(' ')' parseList
+             <|> listTypeParser '[' ']' parseNumberList
+
+listTypeParser delimiter1 delimiter2 handler =
+  do char delimiter1
+     x <- try handler
+     char delimiter2
+     return x
 
 
+-- | Przekształca wejście w AST
 readExpr :: String -> Either ParseError ReplVal
 readExpr input = parse parseExpr "S-expr" input
 
 
 --todo niech parser nie ewaluuje
+-- |Centralna część interpretera: przekształca sparsowane drzewo w wynik
 eval ::  ReplVal -> CDNum Double
 eval (Number d) = Base d
 eval (NumList l) = constructFromList (map (\x-> case x of Number d-> d) l) --todo zakładamy że w NumberList są same liczby
