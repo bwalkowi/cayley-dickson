@@ -4,6 +4,7 @@ import Lib
 import Parser
 import System.IO
 
+
 main :: IO ()
 main = do
   putStr "> "
